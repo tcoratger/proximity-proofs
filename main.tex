@@ -137,7 +137,7 @@ The minimum non-zero weight is 2, so $\ell=2$. This is a $[3, 2, 2]_2$ linear co
 
 \subsection{How Good is a Code? The Singleton Bound}
 
-Now that we can build a code, a natural question arises: for a given length $n$, how much information ($k$) can we pack in while ensuring a certain error-correction capability ($\ell$)? There is a fundamental trade-off, captured by the \textbf{Singleton Bound}.
+Now that we can build a code, a question arises: for a given length $n$, how much information ($k$) can we pack in while ensuring a certain error-correction capability ($\ell$)? There is a fundamental trade-off, captured by the \textbf{Singleton Bound}.
 
 For any $[n, k, \ell]_q$ code, the parameters must satisfy:
 \[
@@ -149,15 +149,15 @@ This inequality sets a hard limit on the efficiency of any code. It tells us tha
 
 The most efficient codes are those that achieve equality in the Singleton Bound. A code is called a \textbf{Maximum Distance Separable (MDS) code} if its parameters satisfy:
 \[
-k = n - d + 1
+k = n - \ell + 1
 \]
 MDS codes are optimal because they offer the largest possible minimum distance for a given length and dimension, perfectly balancing information rate and error resilience.
 
 \begin{tcolorbox}[title={Example: Checking for MDS Property}]
 Let's check our $[3, 2, 2]_2$ example code against the Singleton Bound.
 \begin{itemize}
-    \item The parameters are $n=3$, $k=2$, and $d=2$.
-    \item The bound states $k \leq n - d + 1$.
+    \item The parameters are $n=3$, $k=2$, and $\ell=2$.
+    \item The bound states $k \leq n - \ell + 1$.
     \item Substituting the values: $2 \leq 3 - 2 + 1 \Rightarrow 2 \leq 2$.
 \end{itemize}
 The bound is met with equality! Our simple example code is an MDS code, meaning it's maximally efficient for its length and dimension.
@@ -170,7 +170,7 @@ The bound is met with equality! Our simple example code is an MDS code, meaning 
 The generator matrix provides a simple and powerful algebraic recipe for converting any message into its corresponding protected codeword. This process is called encoding. Here, we'll detail how it works and introduce the concept of code rate, a key measure of a code's efficiency.
 
 \subsubsection{The Encoding Map}
-The process of encoding is fundamentally a linear map from the $k$-dimensional space of messages to the $n$-dimensional space of codewords:
+The process of encoding is a linear map from the $k$-dimensional space of messages to the $n$-dimensional space of codewords:
 $$
 \text{encode}: \mathbb{F}_q^k \to \mathbb{F}_q^n
 $$
@@ -294,7 +294,7 @@ $\displaystyle \Delta ( u,v) \ \geq \ \ell $
 \draw (119,216) node [anchor=north west][inner sep=0.75pt]   [align=left] {Ambiguous};
 % Text Node
 \draw (67.5,281) node   [align=left] {\begin{minipage}[lt]{68pt}\setlength\topsep{0pt}
-$\displaystyle w_{1} \in \mathbb{Q}^{n} \ $
+$\displaystyle w_{1} \in \mathbb{F}^{n} \ $
 \end{minipage}};
 
 \end{tikzpicture}}
@@ -507,7 +507,7 @@ We can now summarize the entire decoding landscape based on the fraction of erro
 \begin{enumerate}
     \item \textbf{Unique Decoding Regime ($\delta < \mu/2$):} This is the "safe zone" we've already discussed. The list of candidates has at most one codeword.
     \item \textbf{List Decoding Regime ($\mu/2 \leq \delta < 1-\sqrt{1-\mu}$):} Here, we can no longer guarantee a unique answer, but the Johnson bound assures us that the list of potential candidates is small. Efficient algorithms exist that can find this list.
-    \item \textbf{Ambiguous Decoding Regime ($\delta \geq 1-\sqrt{1-\mu}$):} Beyond the Johnson radius, all bets are off. The list of candidates could be exponentially large, and decoding becomes computationally infeasible for general codes.
+    \item \textbf{Ambiguous Decoding Regime ($\delta \geq 1-\sqrt{1-\mu}$):} Beyond the Johnson radius, the list of candidates could be exponentially large, and decoding becomes computationally infeasible for general codes.
 \end{enumerate}
 
 The existence of the Johnson bound is crucial for modern coding theory. It proves that we can correct many more errors than the unique decoding radius suggests, as long as we are willing to accept a small list of answers instead of just one.
@@ -556,7 +556,7 @@ The values $m_0, m_1, \dots, m_{k-1}$ are the \textbf{coefficients}, and the hig
 \subsubsection{The Fundamental Property: Uniqueness}
 The single most important property of polynomials for error correction is their uniqueness. A polynomial of degree $k-1$ is uniquely determined by any $k$ of its points.
 
-This means if you know the value of a degree-$k-1$ polynomial at $k$ distinct points, you can perfectly reconstruct the one and only polynomial that passes through them. For example, two points define a unique line (degree 1), and three points define a unique parabola (degree 2).
+This means if you know the value of a degree-$(k-1)$ polynomial at $k$ distinct points, you can perfectly reconstruct the one and only polynomial that passes through them. For example, two points define a unique line (degree 1), and three points define a unique parabola (degree 2).
 
 \begin{figure}[h!]
 \centering
@@ -623,9 +623,7 @@ The final codeword is $(3, 1, -1, -3)$. If this is transmitted and one of the sy
 \end{tcolorbox}
 
 \subsection{Why Finite Fields are Essential}
-Throughout our examples, we've used integers for simplicity, but you may have noticed a problem: interpolation can produce fractions. Furthermore, the values of the evaluated points can become very large. Digital systems, however, work with fixed-size data types (like bytes) and cannot handle arbitrary fractions or infinite growth.
-
-\textbf{Finite fields} (or Galois Fields, GF) solve both problems perfectly.
+Throughout our examples, we've used integers for simplicity, but you may have noticed a problem: interpolation can produce fractions. Furthermore, the values of the evaluated points can become very large. Digital systems, however, work with fixed-size data types (like bytes) and cannot handle arbitrary fractions or infinite growth. \textbf{Finite fields} (or Galois Fields, GF) solve both problems perfectly.
 \begin{enumerate}
     \item \textbf{No Fractions:} In a finite field, division is well-defined and always results in another element of the field. All calculations are exact.
     \item \textbf{Closure:} The result of any addition or multiplication is always another element within the finite set of the field. This prevents numbers from growing too large and ensures that symbols always fit within their designated size (e.g., 8 bits for $\mathbb{F}_{2^8}$).
@@ -707,7 +705,9 @@ Remarkably, the gap still holds for a much larger number of errors. The guarante
 \end{tcolorbox}
 
 
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Application: Soundness of the FRI Protocol}
 
 The theory of proximity gaps has a direct and significant application in analyzing the security of modern proof systems. Specifically, it provides the mathematical foundation for the soundness of the FRI protocol\cite{ben2018fast} (Fast Reed-Solomon Interactive Oracle Proof of Proximity), which is a core component of transparent and quantum-resistant proof systems like STARKs.
@@ -749,7 +749,7 @@ This is precisely the scenario that the proximity gap theorem for Reed-Solomon c
 The proximity gap provides the critical logical step in the bottom-up soundness argument.
 \begin{enumerate}
     \item The verifier confirms that the final function, $f^{(r)}$, is a low-degree polynomial.
-    \item The verifier then proceeds backwards to round $i$. They are convinced that $f^{(i+1)}$ has high agreement with a low-degree polynomial (a codeword).
+    \item The verifier then proceeds backwards to round $i$. He is convinced that $f^{(i+1)}$ has high agreement with a low-degree polynomial (a codeword).
     \item This means that for the prover's chosen $f^{(i)}_{\text{even}}$ and $f^{(i)}_{\text{odd}}$, their combination using the random challenge $z_i$ was close to a codeword.
     \item For the prover's attack to be successful, this would need to hold true for a significant fraction of possible challenges $z_i$.
     \item The Proximity Gap Theorem states that if the line of functions $\{ f^{(i)}_{\text{even}} + z \cdot f^{(i)}_{\text{odd}} \}$ is close to the code for more than a tiny fraction $\varepsilon$ of challenges, it must be the "All-In" case.
@@ -774,6 +774,432 @@ This is where the proximity gap theorem provides a crucial improvement. Older an
 The proximity gap theorem provides a \textbf{tighter soundness analysis}. It proves that the random linear combination check at the heart of FRI is exceptionally reliable. This means each query is far more powerful at detecting inconsistencies than previously understood.
 
 In summary, because the proximity gap provides a stronger guarantee on the soundness of FRI, fewer queries are needed to achieve the same level of cryptographic security. This directly translates to fewer Merkle paths in the final STARK proof, resulting in a smaller proof size and faster verification time.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Proof of the Proximity Gap (Unique Decoding Regime)}
+
+This section details the proof for the proximity gap of Reed-Solomon codes in the unique decoding regime. The proof demonstrates that if a significant fraction of vectors on an affine line are close to a Reed-Solomon code, then the vectors defining the line must share a strong algebraic structure. This structure, in turn, forces the entire line to be close to the code.
+
+\subsection{The Goal and the Strategy}
+The formal statement we aim to prove, based on Theorem 4.1 in Ben-Sasson et al.\cite{ben2023proximity}, is as follows:
+
+\begin{tcolorbox}[breakable, title={Theorem to Prove (Correlated Agreement)}]
+Let $V$ be a Reed-Solomon code of degree $k$ over a domain $D \subset \mathbb{F}_q$. Let $\{\mathbf{u}_0 + z \cdot \mathbf{u}_1 \mid z \in \mathbb{F}_q\}$ be an affine line of vectors.
+
+If the set $S = \{z \in \mathbb{F}_q \mid d(\mathbf{u}_0 + z \cdot \mathbf{u}_1, V) \le \delta n\}$ is sufficiently large (specifically, $|S| > k+1$), then there must exist two codewords, $\mathbf{v}_0, \mathbf{v}_1 \in V$, such that $\mathbf{u}_0$ and $\mathbf{v}_0$ agree on a large fraction of coordinates, and $\mathbf{u}_1$ and $\mathbf{v}_1$ agree on that \textit{same} large fraction of coordinates. This property is known as \textbf{correlated agreement}.
+\end{tcolorbox}
+
+\paragraph{The Proof Strategy}
+The core of the proof is a shift in perspective. Instead of analyzing each of the $|S|$ "close" vectors individually, we analyze the entire line simultaneously using a higher level of algebraic abstraction.
+\begin{enumerate}
+    \item \textbf{Create a Formal Object:} We represent the entire affine line as a single \textit{formal vector} $\mathbf{w}(x)$ whose entries are linear polynomials in a formal variable $Z$. This vector is defined over a \textbf{function field} $\mathbb{F}_q(Z)$.
+    \[ \mathbf{w}(x) = \mathbf{u}_0(x) + Z \cdot \mathbf{u}_1(x) \]
+    \item \textbf{Decode the Formal Object:} We run a classic Reed-Solomon decoding algorithm, the Berlekamp-Welch algorithm, on this single formal vector $\mathbf{w}$.
+    \item \textbf{Deduce Structure:} We show that the success of the decoder on many concrete instances (for $Z=z$ where $z \in S$) implies that the decoder must also succeed on the formal object. The output of this formal decoding reveals the correlated agreement between the original vectors $\mathbf{u}_0$ and $\mathbf{u}_1$.
+\end{enumerate}
+
+\subsection{The Toolkit: Algebraic Decoders and Lemmas}
+The proof relies on two key algebraic tools.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Tool 1: The Berlekamp-Welch Algorithm}
+The Berlekamp-Welch (BW) algorithm is a method for the unique decoding of Reed-Solomon codes. Its objective is to recover the original low-degree polynomial $P(X)$ from a received word $\mathbf{w}$ that may contain a limited number of errors at unknown locations.
+
+The main challenge in error correction is that the locations of the errors are unknown. The BW algorithm's sidesteps this problem by creating a new equation that holds true for \textit{all} positions, whether they are corrupted or not. It achieves this by turning the non-linear problem of finding error locations into a system of linear equations.
+
+\paragraph{The Auxiliary Polynomials}
+The algorithm introduces two auxiliary polynomials whose coefficients are the unknowns we need to solve for:
+\begin{itemize}
+    \item An \textbf{Error-Locator Polynomial}, $A(X)$. This is a polynomial of degree $t$ (the number of errors the code can correct) whose roots are the locations of the corrupted symbols. It is defined as:
+    \[ A(X) = (X - e_1)(X - e_2)\dots(X - e_t) \]
+    where $e_1, \dots, e_t$ are the positions of the errors. Crucially, we do not know these positions in advance; the algorithm will find the coefficients of $A(X)$ for us, which implicitly reveals the error locations. The defining property of this polynomial is that $A(x) = 0$ if and only if position $x$ contains an error.
+
+    \item A \textbf{Codeword-Evaluator Polynomial}, $B(X)$. This polynomial is defined as the product of the original (and unknown) message polynomial $P(X)$ and the error-locator polynomial $A(X)$:
+    \[ B(X) = P(X) \cdot A(X) \]
+\end{itemize}
+
+\paragraph{The Key Equation}
+Using these definitions, the BW algorithm establishes an equation that is valid for every point $x$ in the evaluation domain $D$, where $\mathbf{w}(x)$ is the received symbol at that position:
+\[ A(x) \cdot \mathbf{w}(x) = B(x) \]
+This identity holds universally due to the following case analysis:
+\begin{enumerate}
+    \item \textbf{Case 1: Position $x$ is correct.} By definition, the received symbol is the same as the original, so $\mathbf{w}(x) = P(x)$. The equation becomes $A(x) \cdot P(x) = B(x)$, which is true by the definition of $B(X)$.
+    \item \textbf{Case 2: Position $x$ is corrupted.} In this case, $\mathbf{w}(x) \neq P(x)$. However, because $x$ is an error location, it must be a root of the error-locator polynomial, meaning $A(x) = 0$. The equation becomes $0 \cdot \mathbf{w}(x) = 0$, which is always true.
+\end{enumerate}
+Then, the master equation, $A(x)\mathbf{w}(x) = B(x)$, holds for every position, effectively masking the errors.
+
+\paragraph{Solving the System}
+The equation $A(x)\mathbf{w}(x) = B(x)$ is a \textit{linear} equation in the unknown coefficients of $A(X)$ and $B(X)$. By evaluating this equation at every point $x \in D$ (of which there are $n$), we generate a system of $n$ linear equations. The number of unknowns is the sum of the unknown coefficients in $A(X)$ and $B(X)$. For a code that corrects $t$ errors, this gives us just enough equations to solve for the unknowns uniquely.
+
+
+\begin{tcolorbox}[breakable, title={The Berlekamp-Welch Algorithm: A Summary}]
+The goal is to recover the original polynomial $P(X)$ from a received word $\mathbf{w}$.
+\begin{enumerate}
+    \item \textbf{Set up the System:} Construct a system of $n$ linear equations by asserting that $A(x) \cdot \mathbf{w}(x) = B(x)$ for every position $x$ in the domain. The variables are the unknown coefficients of the polynomials $A(X)$ and $B(X)$.
+    \item \textbf{Solve for the Polynomials:} Solve the linear system to find the unique coefficients of the error-locator $A(X)$ and the evaluator $B(X)$.
+    \item \textbf{Recover the Message:} The original message polynomial is recovered by performing polynomial division:
+    \[ P(X) = \frac{B(X)}{A(X)} \]
+\end{enumerate}
+If $\mathbf{w}$ is indeed close to a low-degree polynomial, a non-zero solution for $A(X)$ and $B(X)$ is guaranteed to exist, and $A(X)$ is guaranteed to divide $B(X)$ without a remainder.
+\end{tcolorbox}
+
+\paragraph{A Closer Look: The System of Equations}
+The equation $A(x) \cdot \mathbf{w}(x) = B(x)$ is linear in the unknown coefficients of $A(X)$ and $B(X)$. To understand the setup, let's count these unknown coefficients.
+
+\paragraph{Counting the Unknowns}
+Assume the code can correct up to $t$ errors and the message polynomial $P(X)$ has degree less than $k$.
+\begin{itemize}
+    \item For $A(X)$: This polynomial must have a root at each of the $t$ error locations. Its degree is therefore exactly $t$. A polynomial of degree $t$ has $t+1$ coefficients. By convention, we set the leading coefficient to 1 (making it \textit{monic}), which leaves exactly $t$ unknown coefficients.
+    \[ A(X) = \underbrace{1 \cdot X^t}_{\text{Known}} + \underbrace{a_{t-1}X^{t-1} + \dots + a_0}_{\text{t unknown coefficients}}\]
+    \item For $B(X)$: This polynomial is the product $B(X) = P(X) \cdot A(X)$. The degree of a product is the sum of the degrees:
+    \[ \deg(B) = \deg(P) + \deg(A) \le (k-1) + t = k+t-1 \]
+    A polynomial of degree $k+t-1$ has $k+t$ coefficients in total:
+    \[ B(X) = \underbrace{b_{k+t-1}X^{k+t-1} + \dots + b_0}_{\text{k+t unknown coefficients}} \]
+\end{itemize}
+In total, we have $t + (k+t) = k+2t$ unknown coefficients to solve for.
+
+\paragraph{Constructing the Equations}
+For each of the $n$ received points $(x_i, \mathbf{w}_i)$, we write down our key equation. This gives us $n$ linear equations, one of which is shown below:
+\[ \underbrace{(b_{k+t-1}x_i^{k+t-1} + \dots + b_0)}_{\text{Linear expression in unknown } b_j\text{'s}} = \mathbf{w}_i \cdot \underbrace{(x_i^t + a_{t-1}x_i^{t-1} + \dots + a_0)}_{\text{Linear expression in unknown } a_j\text{'s}} \]
+Since the code is designed such that $n \ge k+2t$, we have at least as many equations as unknowns, which allows us to find a unique solution for the coefficients.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Tool 2: The Polishchuk-Spielman Lemma}
+This lemma provides the logical bridge from a property observed in many specific instances to a property that must hold formally and universally. It allows us to "lift" a conclusion from a collection of concrete observations to a single, abstract algebraic truth.
+
+\paragraph{Intuition: From Slices to the Whole}
+Imagine a two-variable polynomial, $B(X,Z)$, as a surface. When we fix the value of $Z$ to a specific constant, $z$, we are taking a vertical "slice" of that surface, which results in a simple one-variable curve, $B(X,z)$.
+
+The situation in our proof is that we have two such surfaces, $A(X,Z)$ and $B(X,Z)$. We don't know their formal relationship, but we do observe that for many different slices (i.e., for many values of $z$), the curve $A(X,z)$ divides the curve $B(X,z)$. It is highly unlikely for this divisibility to occur repeatedly by coincidence. The Polishchuk-Spielman lemma formalizes this intuition, stating that if this pattern holds for a sufficient number of slices, it cannot be an accident.
+
+\begin{tcolorbox}[breakable, title={The Polishchuk-Spielman Lemma (Principle)}]
+If the univariate polynomial $A(X,z)$ divides $B(X,z)$ for a sufficiently large number of distinct values of $z$, then the bivariate polynomial $A(X,Z)$ must formally divide $B(X,Z)$. This means there exists a third polynomial, $P(X,Z)$, such that:
+\[ B(X,Z) = A(X,Z) \cdot P(X,Z) \]
+
+\begin{center}
+\begin{tikzpicture}[font=\small]
+    % Draw the Z-axis
+    \draw[->, thick] (0,0) -- (9,0) node[right] {$Z$};
+    
+    % Mark points on the axis where divisibility holds
+    \foreach \x in {1, 2.5, 3, 5, 6, 8} {
+        \draw (\x, 0.1) -- (\x, -0.1);
+        \node[green!50!black] at (\x, 0.4) {$\checkmark$};
+    }
+    \node[anchor=west] at (1, -0.5) {Divisibility holds for many specific values $z \in S$};
+    
+    % Implication arrow
+    \draw[->, ultra thick, purple] (4.5, -1) -- (4.5, -2);
+    
+    % Formal conclusion
+    \node[draw, rounded corners, align=center] at (4.5, -2.7) {
+        $A(X,Z)$ must divide $B(X,Z)$ formally.
+    };
+\end{tikzpicture}
+\end{center}
+This principle allows us to deduce a strong, formal algebraic property from a collection of individual observations.
+\end{tcolorbox}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+\subsection{The Proof}
+With these tools, the proof proceeds as follows.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubsection{Step 1: Constructing a Formal Solution with Berlekamp-Welch}
+Our first step is to apply the Berlekamp-Welch algorithm to our formal word $\mathbf{w}(x) = \mathbf{u}_0(x) + Z \cdot \mathbf{u}_1(x)$. This requires us to find two formal polynomials, $A(X,Z)$ and $B(X,Z)$, that satisfy the key equation for all $x \in D$:
+\[ A(x, Z) \cdot \big(\mathbf{u}_0(x) + Z \cdot \mathbf{u}_1(x)\big) = B(x, Z) \]
+The challenge is to prove that a non-trivial solution (where $A$ and $B$ are not both the zero polynomial) is guaranteed to exist.
+
+\paragraph{From Polynomial Equation to Linear System}
+The equation above might seem complex, but it's actually a system of linear equations in disguise. The true \textit{unknowns} are the coefficients of the polynomials $A(X,Z)$ and $B(X,Z)$. These coefficients are not simple numbers; they are polynomials in the formal variable $Z$. Let's denote them $A_j(Z)$ and $B_j(Z)$.
+
+For each evaluation point $x_i \in D$, we get one linear equation. If we have $n$ points in our domain, we have a system of $n$ linear equations. This can be written in matrix form:
+\[ \mathbf{M}(Z) \cdot \mathbf{c}(Z) = \mathbf{0} \]
+Here, $\mathbf{c}(Z)$ is a vector containing all the unknown coefficient polynomials, and $\mathbf{M}(Z)$ is a large matrix whose entries are themselves polynomials in $Z$.
+
+\begin{tcolorbox}[breakable, title={Illustration: A Small Example of the Matrix $\mathbf{M}(Z)$}]
+Let's consider a small code with the following parameters:
+\begin{itemize}
+    \item A message polynomial of degree at most $k-1=1$ (so dimension $k=2$).
+    \item The ability to correct $t=1$ error.
+    \item An evaluation domain of $n=4$ points, $\{x_1, x_2, x_3, x_4\}$.
+\end{itemize}
+The Berlekamp-Welch algorithm needs to find the unknown polynomials $A(X,Z)$ and $B(X,Z)$. Let's determine their form:
+\begin{itemize}
+    \item $A(X,Z)$ is the error-locator of degree $t=1$. It has the form $A(X,Z) = A_1(Z)X + A_0(Z)$.
+    \item $B(X,Z)$ is the product $P(X)A(X,Z)$. Its degree is at most $(k-1)+t = 1+1=2$. It has the form $B(X,Z) = B_2(Z)X^2 + B_1(Z)X + B_0(Z)$.
+\end{itemize}
+The unknowns are the five coefficient functions: $\{A_1(Z), A_0(Z), B_2(Z), B_1(Z), B_0(Z)\}$.
+
+The key equation is $A(x,Z) \cdot \mathbf{w}(x,Z) - B(x,Z) = 0$. For a single point $x_i$, this expands to:
+\[ \underbrace{\left( A_1(Z)x_i + A_0(Z) \right)}_{\text{Evaluated } A} \cdot \underbrace{\left( \mathbf{u}_0(x_i) + Z\mathbf{u}_1(x_i) \right)}_{\text{Formal word } \mathbf{w}_i(Z)} - \underbrace{\left( B_2(Z)x_i^2 + B_1(Z)x_i + B_0(Z) \right)}_{\text{Evaluated } B} = 0 \]
+By rearranging and grouping the five unknown coefficient functions, we get a linear equation. We generate one such equation for each of the $n=4$ points. This gives us a system of 4 linear equations for 5 unknowns, which can be written in matrix form $\mathbf{M}(Z) \cdot \mathbf{c}(Z) = \mathbf{0}$:
+\[
+\underbrace{
+\begin{pmatrix}
+x_1 \mathbf{w}_1(Z) & \mathbf{w}_1(Z) & -x_1^2 & -x_1 & -1 \\
+x_2 \mathbf{w}_2(Z) & \mathbf{w}_2(Z) & -x_2^2 & -x_2 & -1 \\
+x_3 \mathbf{w}_3(Z) & \mathbf{w}_3(Z) & -x_3^2 & -x_3 & -1 \\
+x_4 \mathbf{w}_4(Z) & \mathbf{w}_4(Z) & -x_4^2 & -x_4 & -1
+\end{pmatrix}
+}_{\text{The } 4 \times 5 \text{ matrix } \mathbf{M}(Z)}
+\cdot
+\begin{pmatrix}
+A_1(Z) \\ A_0(Z) \\ B_2(Z) \\ B_1(Z) \\ B_0(Z)
+\end{pmatrix}
+=
+\begin{pmatrix}
+0 \\ 0 \\ 0 \\ 0
+\end{pmatrix}
+\]
+In this specific example, since the matrix has more columns (5 unknowns) than rows (4 equations), linear algebra guarantees that a non-trivial (non-zero) solution must exist.
+
+In the general proof, the matrix is not always "wide". For cases where the number of equations is greater than or equal to the number of unknowns, the more powerful determinant argument (using the "Too Many Roots" principle) is required to prove that the matrix is rank-deficient and that a non-trivial formal solution still exists.
+\end{tcolorbox}
+
+
+
+\begin{tcolorbox}[breakable, title={Example: The General Case (A "Tall" or Square Matrix)}]
+Let's now consider a more general case where the simple "more columns than rows" argument does not apply. Imagine a code with these parameters:
+\begin{itemize}
+    \item Message polynomial of degree at most $k-1=1$ (dimension $k=2$).
+    \item Ability to correct $t=1$ error.
+    \item An evaluation domain of $n=5$ points, $\{x_1, \dots, x_5\}$.
+\end{itemize}
+
+\paragraph{Counting Unknowns and Equations}
+The unknown polynomials are:
+\begin{itemize}
+    \item $A(X,Z) = A_1(Z)X + A_0(Z)$, with 2 unknown coefficient functions.
+    \item $B(X,Z)$, with $\deg(B) \le (k-1)+t = 1+1=2$. So, $B(X,Z) = B_2(Z)X^2 + B_1(Z)X + B_0(Z)$, with 3 unknown coefficient functions.
+\end{itemize}
+The total number of unknown functions is $2+3=5$. The number of equations is the number of evaluation points, $n=5$.
+
+\paragraph{The Matrix System}
+The key equation is $A(x,Z) \cdot \mathbf{w}(x,Z) - B(x,Z) = 0$. For a single point $x_i$, this expands to:
+\[ \underbrace{\left( A_1(Z)x_i + A_0(Z) \right)}_{\text{Evaluated } A} \cdot \underbrace{\left( \mathbf{u}_0(x_i) + Z\mathbf{u}_1(x_i) \right)}_{\text{Formal word } \mathbf{w}_i(Z)} - \underbrace{\left( B_2(Z)x_i^2 + B_1(Z)x_i + B_0(Z) \right)}_{\text{Evaluated } B} = 0 \]
+Writing one such equation for each of the 5 points gives us a \textbf{square} $5 \times 5$ system of linear equations, $\mathbf{M}(Z) \cdot \mathbf{c}(Z) = \mathbf{0}$:
+\[
+\underbrace{
+\begin{pmatrix}
+x_1 \mathbf{w}_1(Z) & \mathbf{w}_1(Z) & -x_1^2 & -x_1 & -1 \\
+x_2 \mathbf{w}_2(Z) & \mathbf{w}_2(Z) & -x_2^2 & -x_2 & -1 \\
+x_3 \mathbf{w}_3(Z) & \mathbf{w}_3(Z) & -x_3^2 & -x_3 & -1 \\
+x_4 \mathbf{w}_4(Z) & \mathbf{w}_4(Z) & -x_4^2 & -x_4 & -1 \\
+x_5 \mathbf{w}_5(Z) & \mathbf{w}_5(Z) & -x_5^2 & -x_5 & -1
+\end{pmatrix}
+}_{\text{The } 5 \times 5 \text{ matrix } \mathbf{M}(Z)}
+\cdot
+\begin{pmatrix}
+A_1(Z) \\ A_0(Z) \\ B_2(Z) \\ B_1(Z) \\ B_0(Z)
+\end{pmatrix}
+=
+\begin{pmatrix}
+0 \\ 0 \\ 0 \\ 0 \\ 0
+\end{pmatrix}
+\]
+
+\paragraph{The Need for the Determinant Argument}
+In this case, because the matrix is square, a non-trivial solution is \textbf{not} automatically guaranteed. From linear algebra, a non-trivial solution exists if and only if the determinant of the matrix is zero:
+\[ \det(\mathbf{M}(Z)) = 0 \]
+This is precisely why the proof must show that this determinant polynomial, $R(Z) = \det(\mathbf{M}(Z))$, is identically zero. This is accomplished using the "Too Many Roots" principle, which handles all cases, whether the matrix is wide, square, or tall.
+\end{tcolorbox}
+
+
+
+
+
+
+\paragraph{Proving a Solution Exists: The Determinant Argument}
+From linear algebra, a homogeneous system of equations like $\mathbf{M}(Z) \cdot \mathbf{c}(Z) = \mathbf{0}$ has a non-trivial solution if and only if its matrix $\mathbf{M}(Z)$ is \textbf{rank-deficient}. This means the rows (or columns) are not all linearly independent; there is some redundancy in the equations. The standard way to check for rank deficiency is to compute the determinants of all the largest possible square submatrices (known as maximal minors). If all of these determinants are zero, the matrix is rank-deficient and a solution is guaranteed.
+
+Our goal is therefore to prove that for our formal matrix $\mathbf{M}(Z)$, the determinant of every maximal square submatrix is identically the zero polynomial. We can prove this for any such determinant, which we'll call $R(Z)$, by using what I will call the "Too Many Roots" principle (for ease of understanding and identification).
+
+\begin{tcolorbox}[breakable, title={The "Too Many Roots" Principle}]
+A non-zero, one-variable polynomial of degree $d$ can have at most $d$ distinct roots.
+\begin{center}
+\begin{tikzpicture}[font=\small, scale=0.9]
+    \draw[->] (-1,0) -- (4,0) node[right] {$Z$};
+    \draw[gray!50] (-1,-1.5) grid (4,1.5);
+    \draw[blue, thick, smooth] plot coordinates {(-0.5, 1.5) (1, -1) (2.5, -1.2) (3.5, 1.5)};
+    \node[blue, above] at (2,1.5) {$R(Z)$ of degree 2};
+    \node[red, circle, fill, inner sep=1.5pt] at (0.2, 0) {};
+    \node[red, circle, fill, inner sep=1.5pt] at (3, 0) {};
+    \node[red, below] at (1.6, -1.5) {Can have at most 2 roots.};
+\end{tikzpicture}
+\end{center}
+\textbf{The Implication:} If we find that a polynomial of degree at most $d$ actually has $d+1$ or more roots, it must be the \textbf{zero polynomial}, $R(Z) \equiv 0$.
+\end{tcolorbox}
+
+The proof follows a clear, three-step logical chain:
+\begin{enumerate}
+    \item \textbf{The Determinant is a Low-Degree Polynomial:}
+    Since the entries of the formal matrix $\mathbf{M}(Z)$ are polynomials in $Z$, the determinant of any of its square submatrices, $R(Z)$, is also a polynomial in $Z$. A careful analysis of the matrix structure, as shown in the paper, reveals that the degree of this polynomial is low. Specifically, it is at most $t+1$, where $t$ is the number of errors the code can correct.
+    \[ \deg(R(Z)) \le t+1 \]
+
+    \item \textbf{The "Good" Set Provides Many Roots:}
+    This is the important step that connects our initial assumption to the formal system. We assumed that for every $z$ in our "good" set $S$, the concrete word $\mathbf{u}_0 + z \cdot \mathbf{u}_1$ is close to a codeword. The Berlekamp-Welch algorithm guarantees that the corresponding concrete system, $\mathbf{M}(z) \cdot \mathbf{c} = \mathbf{0}$, has a non-trivial solution for each of these $z$'s.
+
+    This can only be true if each concrete matrix $\mathbf{M}(z)$ is rank-deficient, which means the determinant of our chosen square submatrix, when evaluated at $z$, must be zero.
+    \[ \underbrace{R(z) = 0}_{\text{The determinant is zero...}} \quad \underbrace{\text{for all } z \in S}_{\text{...at every "good" point.}} \]
+    This gives us a powerful piece of information: every single element in the set $S$ must be a root of the polynomial $R(Z)$.
+
+    \item \textbf{Applying the Principle to Prove $R(Z) \equiv 0$:}
+    The final step brings the previous two points together. The setup of the theorem requires that the size of our "good" set is greater than the maximum possible degree of the determinant polynomial, i.e., $|S| > t+1$. We are therefore faced with the following situation:
+    \[ \text{A polynomial } R(Z) \text{ with } \underbrace{\deg(R(Z)) \le t+1}_{\text{Low Degree}} \text{ that has } \underbrace{|S| > t+1}_{\text{Many Roots}} \]
+    According to the "Too Many Roots" principle, this is impossible unless $R(Z)$ is the zero polynomial.
+\end{enumerate}
+Since this argument holds for any maximal square submatrix of $\mathbf{M}(Z)$, we conclude that the formal matrix is rank-deficient. Therefore, a formal, non-trivial solution for $A(X,Z)$ and $B(X,Z)$ is guaranteed to exist.
+
+
+\begin{tcolorbox}[breakable, title={Full Example: Proving a Formal Solution Exists}]
+Let's walk through the entire process with a numerical example.
+
+\paragraph{1. The Setup}
+Suppose we are working over the finite field $\mathbb{F}_5 = \{0,1,2,3,4\}$. We have an affine line of words defined by $\mathbf{u}_0$ and $\mathbf{u}_1$ over the domain $D=\{0,1,2,3\}$ ($n=4$).
+\begin{itemize}
+    \item $\mathbf{u}_0 = (1, 0, 3, 0)$
+    \item $\mathbf{u}_1 = (3, 2, 2, 1)$
+\end{itemize}
+Our assumption is that for a "good" set of values $S$, the word $\mathbf{w}_z = \mathbf{u}_0 + z \cdot \mathbf{u}_1$ is close to the Reed-Solomon code of degree $k-1=1$. Let's say we have found three such values, $S=\{1,2,3\}$. (This corresponds to $t=1$ error correction, where we need $|S| > t+1$, so $3 > 2$).
+
+\paragraph{2. The Formal Matrix $\mathbf{M}(Z)$}
+We set up the Berlekamp-Welch system for our formal word $\mathbf{w}(x,Z) = \mathbf{u}_0(x) + Z\mathbf{u}_1(x)$. With $n=4, k=2, t=1$, we get a $4 \times 4$ square system $\mathbf{M}(Z)\cdot\mathbf{c}(Z) = \mathbf{0}$. The entries of $\mathbf{M}(Z)$ are polynomials in $Z$:
+\[
+\mathbf{M}(Z) = 
+\begin{pmatrix}
+x_1 \mathbf{w}_1(Z) & \mathbf{w}_1(Z) & -x_1 & -1 \\
+x_2 \mathbf{w}_2(Z) & \mathbf{w}_2(Z) & -x_2 & -1 \\
+x_3 \mathbf{w}_3(Z) & \mathbf{w}_3(Z) & -x_3 & -1 \\
+x_4 \mathbf{w}_4(Z) & \mathbf{w}_4(Z) & -x_4 & -1
+\end{pmatrix}
+=
+\begin{pmatrix}
+0 & 1+3Z & 0 & -1 \\
+1(0+2Z) & 0+2Z & -1 & -1 \\
+2(3+2Z) & 3+2Z & -2 & -1 \\
+3(0+1Z) & 0+1Z & -3 & -1
+\end{pmatrix}
+\]
+
+\paragraph{3. The Determinant as a Polynomial $R(Z)$}
+To prove a formal solution exists, we must show that $\det(\mathbf{M}(Z)) = 0$. This determinant, $R(Z)$, is a polynomial in $Z$. By inspecting the matrix, we can see the highest power of $Z$ in any entry is 1. The determinant calculation involves products of entries, and in a $4 \times 4$ matrix, the highest possible degree is bounded. In this case, it can be shown that $\deg(R(Z)) \le t+1 = 2$.
+
+\paragraph{4. Finding Roots of $R(Z)$ using the set $S$}
+This is the key step. We know that for every $z \in S=\{1,2,3\}$, the concrete system has a solution, which means the determinant of the concrete matrix $\mathbf{M}(z)$ must be zero. Let's check for $z=1$:
+\[ \mathbf{M}(1) = \begin{pmatrix} 0 & 4 & 0 & -1 \\ 2 & 2 & -1 & -1 \\ 0 & 0 & -2 & -1 \\ 3 & 1 & -3 & -1 \end{pmatrix} \pmod 5 \]
+The determinant of this matrix is indeed 0. Therefore, $R(1)=0$, and $Z=1$ is a root of $R(Z)$.
+
+If we do the same for $z=2$ and $z=3$, we would find that $\det(\mathbf{M}(2))=0$ and $\det(\mathbf{M}(3))=0$. So, $Z=2$ and $Z=3$ are also roots.
+
+\paragraph{5. Applying the "Too Many Roots" Principle}
+We have now established the following facts:
+\begin{itemize}
+    \item $R(Z)$ is a polynomial with $\deg(R(Z)) \le 2$.
+    \item $R(Z)$ has at least 3 roots (at $Z=1, 2, 3$).
+\end{itemize}
+Since the number of roots (3) is greater than the maximum possible degree (2), the "Too Many Roots" principle tells us that $R(Z)$ cannot be a non-zero polynomial. It must be identically zero: $R(Z) \equiv 0$. Because $\det(\mathbf{M}(Z))$ is formally zero, a non-trivial formal solution for $A(X,Z)$ and $B(X,Z)$ is guaranteed to exist.
+\end{tcolorbox}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% \subsubsection{Step 2: Lifting Divisibility with the Polishchuk-Spielman Lemma}
+% From Step 1, we have our two formal polynomials $A(X,Z)$ and $B(X,Z)$. We also know from our initial assumption that for every $z \in S$, the word $\mathbf{u}_0 + z\mathbf{u}_1$ is close to some unique codeword $P_z(X)$. The guarantee of the Berlekamp-Welch algorithm tells us that for each of these "good" $z$'s:
+% \[ \frac{B(X,z)}{A(X,z)} = P_z(X) \]
+% This means that the polynomial $A(X,z)$ divides $B(X,z)$ for every $z \in S$. Since our set $S$ is large enough, we can now apply the Polishchuk-Spielman lemma. The lemma allows us to "lift" this conclusion: because divisibility holds for many specific "slices" (for many $z \in S$), it must hold for the formal object itself.
+% Therefore, we conclude that $A(X,Z)$ must formally divide $B(X,Z)$.
+
+
+
+
+
+
+
+
+
+\subsubsection{Step 2: Lifting Divisibility and Deriving the Gap}
+From Step 1, we have successfully constructed two non-zero formal polynomials, $A(X,Z)$ and $B(X,Z)$. The next, and most critical, part of the proof is to show that they have the right relationship: that $A(X,Z)$ formally divides $B(X,Z)$.
+
+We begin with our central assumption: for every $z$ in our "good" set $S$, the concrete word $\mathbf{w}_z = \mathbf{u}_0 + z\mathbf{u}_1$ is close to a unique codeword $P_z(X)$. As a consequence of the Berlekamp-Welch algorithm, this means that for each of these $z \in S$:
+\[ \frac{B(X,z)}{A(X,z)} = P_z(X) \]
+This observation (that $A(X,z)$ divides $B(X,z)$ for all $|S|$ values of $z$) is the input to the Polishchuk-Spielman lemma. The lemma's role is to "lift" this property from the concrete instances to the formal object, but its power is conditional.
+
+\begin{tcolorbox}[breakable, title={The Lemma's Condition and the Origin of the Gap}]
+The Polishchuk-Spielman lemma only works if a specific inequality, which balances the complexity of the problem across its two variables ($X$ and $Z$), is satisfied. Informally, the condition is:
+\[ \underbrace{\frac{k+t}{n}}_{\text{Complexity from X}} + \underbrace{\frac{t+1}{|S|}}_{\text{Complexity from Z}} < 1 \]
+This inequality creates a "balancing act". The first term is fixed by the code's parameters. For the sum to be less than 1, the second term must be small, which requires its denominator, $|S|$, to be large. But how large?
+
+\paragraph{Deriving the Threshold}
+We can find the required size of $|S|$ by solving the inequality. First, we isolate the term containing $|S|$:
+\[ \frac{t+1}{|S|} < 1 - \frac{k+t}{n} \implies \frac{t+1}{|S|} < \frac{n - k - t}{n} \]
+Now, we can solve for $|S|$ by inverting both sides (which flips the inequality sign):
+\[ |S| > n \cdot \underbrace{\frac{t+1}{n-k-t}}_{\text{This fraction is close to 1}} \]
+The crucial insight comes from the parameters of any code in the unique decoding regime. For such codes, the block length $n$ must be greater than the message size $k$ plus twice the number of correctable errors $t$ (i.e., $n > k+2t$). This implies that $n-k-t > t$.
+
+Because the denominator ($n-k-t$) is always slightly larger than the numerator ($t$), the fraction is always less than or equal to 1. In the "worst-case" scenario (where the code's parameters are tightest), this fraction is almost exactly 1. The proof therefore uses the clean, slightly stronger condition that $|S|$ must be greater than $n$ itself. This ensures the lemma's inequality is always satisfied.
+
+This leads directly to the proximity gap:
+\begin{enumerate}
+    \item The lemma provides the engine for the proof, but requires the condition $|S| > n$ to be met.
+    \item The proof therefore establishes the following powerful implication:
+    \[ \text{If } |S| > n \quad \implies \quad \text{(Lemma applies, forcing correlated agreement)} \quad \implies \quad |S| = q \]
+    \item This implication, $\text{If } |S|>n \text{ then } |S|=q$, when stated in terms of probabilities, creates the "forbidden zone" $(n/q, 1)$ and gives us the error parameter $\varepsilon = n/q$.
+\end{enumerate}
+The proximity gap is therefore a direct consequence of the algebraic constraints imposed by the lemma.
+\end{tcolorbox}
+
+With this understanding, the final step of the proof is clear. Our initial assumption in the proximity gap theorem is that we are in a situation where the fraction of good words is greater than $\varepsilon = n/q$. This is equivalent to assuming $|S| > n$.
+
+Because this condition is met, we satisfy the requirements of the Polishchuk-Spielman lemma. This allows us to perform the crucial "lift" and conclude that because divisibility holds for many specific slices, it must hold for the formal object itself. Therefore, $A(X,Z)$ must formally divide $B(X,Z)$.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{Step 3: Unveiling the Correlated Agreement}
+The result of Step 2 is a formal decoded polynomial, $P(X,Z) = B(X,Z) / A(X,Z)$. The Polishchuk-Spielman lemma provides one more piece of information: this resulting polynomial must have a simple structure. Specifically, it must be linear in $Z$. This allows us to write it as:
+\[ P(X,Z) = \mathbf{v}_0(X) + Z \cdot \mathbf{v}_1(X) \]
+where $\mathbf{v}_0(X)$ and $\mathbf{v}_1(X)$ are themselves low-degree polynomials (and thus represent valid Reed-Solomon codewords).
+
+The final step is to relate this "perfect" formal line back to our original, potentially corrupted formal word $\mathbf{w}(x,Z)$. The Berlekamp-Welch properties guarantee that $\mathbf{w}(x,Z)$ is close to $P(X,Z)$; that is, they must agree on a large fraction of coordinates $x \in D$. For any such coordinate $x$ where they agree, the following formal identity in $Z$ must hold:
+\[ \underbrace{\mathbf{u}_0(x) + Z \cdot \mathbf{u}_1(x)}_{\text{Original Formal Word}} = \underbrace{\mathbf{v}_0(x) + Z \cdot \mathbf{v}_1(x)}_{\text{Decoded Formal Codeword}} \]
+Since this is an equality between two linear polynomials in the formal variable $Z$, their corresponding coefficients must be identical. This forces two conditions to be true simultaneously for this large set of agreeing positions:
+\begin{enumerate}
+    \item $\mathbf{u}_0(x) = \mathbf{v}_0(x)$
+    \item $\mathbf{u}_1(x) = \mathbf{v}_1(x)$
+\end{enumerate}
+
+\subsubsection{Conclusion of the Proof}
+This result is precisely the \textbf{correlated agreement} we sought. It demonstrates that the errors in $\mathbf{u}_0$ (positions where it differs from the codeword $\mathbf{v}_0$) and the errors in $\mathbf{u}_1$ (where it differs from $\mathbf{v}_1$) must occur on the exact same, small set of coordinates.
+
+If this correlated agreement holds, then for any $z \in \mathbb{F}_q$, the errors in the combined word $\mathbf{u}_0 + z\mathbf{u}_1$ are also confined to that same set of positions. Consequently, every vector on the line is close to the corresponding codeword $\mathbf{v}_0 + z\mathbf{v}_1$. This is the "All-In" case.
+
+The proof has shown that if an affine line is not "All-Out," the underlying algebraic structure forces it into the "All-In" case. No middle ground is possible, which completes the proof of the proximity gap for the unique decoding regime.
 
 
 
