@@ -18,7 +18,7 @@
 \usepackage{tcolorbox}
 \tcbuselibrary{breakable}
 \usepackage{indentfirst}
-\usetikzlibrary{positioning, arrows.meta}
+\usetikzlibrary{positioning, arrows.meta, patterns}
 
 \tcbset{
     colback=purple!5!white,
@@ -675,19 +675,495 @@ The combined error is $(5, 0, 2z, 0)$. Unless $z=0$, this vector has two errors.
 \end{tcolorbox}
 
 \subsubsection{Formal Definition}
-This "all-or-nothing" idea is captured formally in the definition of a proximity gap.
+This "all-or-nothing" idea is captured formally in the definition of a proximity gap. 
 
-\begin{tcolorbox}[breakable, title={Definition: Proximity Gap}]
-A collection of sets $\mathcal{S}$ (e.g., all lines in $\mathbb{F}_q^n$) displays a $(\delta, \varepsilon)$-proximity gap with respect to a code $V$ if for every set $S \in \mathcal{S}$, exactly one of the following is true:
+
+
+\begin{tcolorbox}[breakable, title={Definition: The Proximity Gap for Reed-Solomon Codes}]
+Let our code $V$ define a property (the property of being a valid codeword), and let $\mathcal{S}$ be a collection of sets of vectors (for example, all affine spaces in $\mathbb{F}_q^n$). We say that this collection $\mathcal{S}$ displays a $(\delta, \varepsilon)$-proximity gap with respect to the code $V$ if for every set $S$ in the collection, exactly one of the following is true:
+
 \begin{enumerate}
-    \item \textbf{All-In:} Every vector in $S$ is $\delta$-close to the code $V$.
+    \item \textbf{All-In:} Every vector in the affine space $S$ is $\delta$-close to the code $V$.
     \[ \Pr_{\mathbf{u} \in S} \left[ d(\mathbf{u}, V) \le \delta n \right] = 1 \]
     \item \textbf{All-Out:} At most a tiny fraction, $\varepsilon$, of vectors in $S$ are $\delta$-close to the code $V$.
     \[ \Pr_{\mathbf{u} \in S} \left[ d(\mathbf{u}, V) \le \delta n \right] \le \varepsilon \]
 \end{enumerate}
-Here, $\delta$ is the proximity parameter (the fraction of allowed errors), and $\varepsilon$ is the error parameter (a very small number).
+The theorem provides the precise formulas for the error parameter $\varepsilon$ based on the proximity parameter $\delta$.
+
+\hrulefill
+
+\paragraph{Parameters of the Gap for a Reed-Solomon Code $V = \text{RS}[\mathbb{F}_q, D, k]$}
+Let $V$ be a Reed-Solomon code defined by polynomials of degree at most $k$ evaluated on a domain $D$ of size $n$.
+\begin{itemize}
+    \item The \textbf{rate} of the code is $\rho = (k+1)/n$.
+    \item The \textbf{proximity parameter} $\delta$ is the fraction of errors. The gap holds for any $\delta$ in the range $(0, 1-\sqrt{\rho})$.
+    \item The \textbf{error parameter} $\varepsilon$ is a piecewise function that depends on which regime $\delta$ is in:
+\end{itemize}
+
+\begin{enumerate}
+    \item \textbf{Unique Decoding Bound:} For a small fraction of errors, where $\delta \in \left(0, \frac{1-\rho}{2}\right)$, the error parameter is:
+    \[ \varepsilon = \varepsilon_U(q, n) := \frac{n}{q} \]
+    This gives a very strong guarantee when the field size $q$ is larger than the block length $n$.
+
+    \item \textbf{Johnson Bound:} For a larger fraction of errors, where $\delta \in \left[\frac{1-\rho}{2}, 1-\sqrt{\rho}\right)$, we first define a "safety margin" $\eta := (1 - \sqrt{\rho}) - \delta$. The error parameter is then:
+    \[ \varepsilon = \varepsilon_J(q, n, \rho, \delta) := \frac{(k+1)^2}{\left(2 \min\left(\eta, \frac{\sqrt{\rho}}{20}\right)\right)^7 q} = O\left(\frac{1}{(\eta\rho)^{O(1)}} \cdot \frac{n^2}{q}\right) \]
+    This shows the gap still holds, but requires a larger field size (roughly $q > n^2$) to ensure $\varepsilon$ remains small.
+\end{enumerate}
 \end{tcolorbox}
 
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsection{A more visual intuition}
+
+To build a more intuitive understanding of the proximity gap, it helps to visualize the abstract spaces and relationships involved. While we are working in a high-dimensional vector space $\mathbb{F}_q^n$, we can represent the key concepts with a simplified 2D diagram.
+
+In this visual explanation, we will represent the entire Reed-Solomon code $V$ as a set of discrete points. The affine space $S$ (which in the FRI protocol is a line of vectors like $\{\mathbf{u}_0 + z \cdot \mathbf{u}_1\}$) will be represented as a continuous 2D plane.
+
+The concept of being "$\delta$-close" can be visualized as a region, or Hamming ball, around each valid codeword. Any vector that falls inside the ball around a codeword $\mathbf{v}$ is considered close to it. The proximity gap theorem, then, is a statement about the nature of the intersection between the affine space $S$ (our plane) and the union of all these Hamming balls. The theorem explores: what fraction of the plane $S$ is covered by these "close" regions?
+
+
+
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_i3gskoh1d}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_i3gskoh1d}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_s13s2rs9l}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_s13s2rs9l}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_mpaznpd80}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_mpaznpd80}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_i5644y734}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_i5644y734}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_rzecq1j3k}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_rzecq1j3k}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_kj1c1e3ih}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_kj1c1e3ih}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_9b246j6r3}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_9b246j6r3}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{figure}[h!]
+\centering
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\resizebox{0.9\textwidth}{!}{
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Shape: Rectangle [id:dp27949232055099515] 
+\draw   (48.5,-30.5) -- (637.5,-30.5) -- (637.5,334.5) -- (48.5,334.5) -- cycle ;
+%Shape: Circle [id:dp17038099772188398] 
+\draw  [pattern=_i3gskoh1d,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (101,126.25) .. controls (101,104.57) and (118.57,87) .. (140.25,87) .. controls (161.93,87) and (179.5,104.57) .. (179.5,126.25) .. controls (179.5,147.93) and (161.93,165.5) .. (140.25,165.5) .. controls (118.57,165.5) and (101,147.93) .. (101,126.25) -- cycle ;
+%Shape: Circle [id:dp9464612157048741] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (137.63,128.88) .. controls (137.63,127.43) and (138.8,126.25) .. (140.25,126.25) .. controls (141.7,126.25) and (142.88,127.43) .. (142.88,128.88) .. controls (142.88,130.32) and (141.7,131.5) .. (140.25,131.5) .. controls (138.8,131.5) and (137.63,130.32) .. (137.63,128.88) -- cycle ;
+%Shape: Circle [id:dp31404234100672723] 
+\draw  [pattern=_s13s2rs9l,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (488,28.25) .. controls (488,6.57) and (505.57,-11) .. (527.25,-11) .. controls (548.93,-11) and (566.5,6.57) .. (566.5,28.25) .. controls (566.5,49.93) and (548.93,67.5) .. (527.25,67.5) .. controls (505.57,67.5) and (488,49.93) .. (488,28.25) -- cycle ;
+%Shape: Circle [id:dp6099238208996306] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (524.63,30.88) .. controls (524.63,29.43) and (525.8,28.25) .. (527.25,28.25) .. controls (528.7,28.25) and (529.88,29.43) .. (529.88,30.88) .. controls (529.88,32.32) and (528.7,33.5) .. (527.25,33.5) .. controls (525.8,33.5) and (524.63,32.32) .. (524.63,30.88) -- cycle ;
+%Shape: Circle [id:dp17830184332645493] 
+\draw  [pattern=_mpaznpd80,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (304,153.25) .. controls (304,131.57) and (321.57,114) .. (343.25,114) .. controls (364.93,114) and (382.5,131.57) .. (382.5,153.25) .. controls (382.5,174.93) and (364.93,192.5) .. (343.25,192.5) .. controls (321.57,192.5) and (304,174.93) .. (304,153.25) -- cycle ;
+%Shape: Circle [id:dp1783487758901956] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (340.63,155.88) .. controls (340.63,154.43) and (341.8,153.25) .. (343.25,153.25) .. controls (344.7,153.25) and (345.88,154.43) .. (345.88,155.88) .. controls (345.88,157.32) and (344.7,158.5) .. (343.25,158.5) .. controls (341.8,158.5) and (340.63,157.32) .. (340.63,155.88) -- cycle ;
+%Shape: Circle [id:dp8487384919476861] 
+\draw  [pattern=_i5644y734,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (198,13.25) .. controls (198,-8.43) and (215.57,-26) .. (237.25,-26) .. controls (258.93,-26) and (276.5,-8.43) .. (276.5,13.25) .. controls (276.5,34.93) and (258.93,52.5) .. (237.25,52.5) .. controls (215.57,52.5) and (198,34.93) .. (198,13.25) -- cycle ;
+%Shape: Circle [id:dp8993572649298412] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (234.63,15.88) .. controls (234.63,14.43) and (235.8,13.25) .. (237.25,13.25) .. controls (238.7,13.25) and (239.88,14.43) .. (239.88,15.88) .. controls (239.88,17.32) and (238.7,18.5) .. (237.25,18.5) .. controls (235.8,18.5) and (234.63,17.32) .. (234.63,15.88) -- cycle ;
+%Shape: Circle [id:dp932584538189339] 
+\draw  [pattern=_rzecq1j3k,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (141,251.25) .. controls (141,229.57) and (158.57,212) .. (180.25,212) .. controls (201.93,212) and (219.5,229.57) .. (219.5,251.25) .. controls (219.5,272.93) and (201.93,290.5) .. (180.25,290.5) .. controls (158.57,290.5) and (141,272.93) .. (141,251.25) -- cycle ;
+%Shape: Circle [id:dp050467514346873465] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (177.63,253.88) .. controls (177.63,252.43) and (178.8,251.25) .. (180.25,251.25) .. controls (181.7,251.25) and (182.88,252.43) .. (182.88,253.88) .. controls (182.88,255.32) and (181.7,256.5) .. (180.25,256.5) .. controls (178.8,256.5) and (177.63,255.32) .. (177.63,253.88) -- cycle ;
+%Shape: Circle [id:dp3934921458618219] 
+\draw  [pattern=_kj1c1e3ih,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (494,167.25) .. controls (494,145.57) and (511.57,128) .. (533.25,128) .. controls (554.93,128) and (572.5,145.57) .. (572.5,167.25) .. controls (572.5,188.93) and (554.93,206.5) .. (533.25,206.5) .. controls (511.57,206.5) and (494,188.93) .. (494,167.25) -- cycle ;
+%Shape: Circle [id:dp40482317864657724] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (530.63,169.88) .. controls (530.63,168.43) and (531.8,167.25) .. (533.25,167.25) .. controls (534.7,167.25) and (535.88,168.43) .. (535.88,169.88) .. controls (535.88,171.32) and (534.7,172.5) .. (533.25,172.5) .. controls (531.8,172.5) and (530.63,171.32) .. (530.63,169.88) -- cycle ;
+%Shape: Circle [id:dp13601441091909405] 
+\draw  [pattern=_9b246j6r3,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (400,261.25) .. controls (400,239.57) and (417.57,222) .. (439.25,222) .. controls (460.93,222) and (478.5,239.57) .. (478.5,261.25) .. controls (478.5,282.93) and (460.93,300.5) .. (439.25,300.5) .. controls (417.57,300.5) and (400,282.93) .. (400,261.25) -- cycle ;
+%Shape: Circle [id:dp8718399947274401] 
+\draw  [fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (436.63,263.88) .. controls (436.63,262.43) and (437.8,261.25) .. (439.25,261.25) .. controls (440.7,261.25) and (441.88,262.43) .. (441.88,263.88) .. controls (441.88,265.32) and (440.7,266.5) .. (439.25,266.5) .. controls (437.8,266.5) and (436.63,265.32) .. (436.63,263.88) -- cycle ;
+%Straight Lines [id:da9370889487451638] 
+\draw    (140.25,131.5) -- (140.25,89) ;
+\draw [shift={(140.25,87)}, rotate = 90] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da03148457098906687] 
+\draw    (330.5,235.5) -- (342.92,160.47) ;
+\draw [shift={(343.25,158.5)}, rotate = 99.4] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da14867213443900906] 
+\draw    (258.5,252.5) -- (184.87,253.84) ;
+\draw [shift={(182.88,253.88)}, rotate = 358.96] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da42694995194895935] 
+\draw    (380.5,254.5) -- (437.27,263.56) ;
+\draw [shift={(439.25,263.88)}, rotate = 189.07] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da03211923453646748] 
+\draw    (433.5,31.5) -- (515.54,14.9) ;
+\draw [shift={(517.5,14.5)}, rotate = 168.56] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da7031762795749553] 
+\draw    (438.5,67.5) -- (515.16,153.01) ;
+\draw [shift={(516.5,154.5)}, rotate = 228.12] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da3798725634306739] 
+\draw    (311.5,25.5) -- (250.39,4.16) ;
+\draw [shift={(248.5,3.5)}, rotate = 19.25] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (60,-20) node [anchor=north west][inner sep=0.75pt]   [align=left] {Affine space $\displaystyle S \in \mathbb{F}_q^n$};
+% Text Node
+\draw (143,103.4) node [anchor=north west][inner sep=0.75pt]    {$\delta $};
+% Text Node
+\draw (266,243) node [anchor=north west][inner sep=0.75pt]   [align=left] {Valid codewords};
+% Text Node
+\draw (320,34.5) node [anchor=north west][inner sep=0.75pt]   [align=left] {Regions of $\displaystyle S$ where\\$\displaystyle d_{\mathbf{u} \in S}( \mathbf{u},V) \leq \delta n$};
+
+
+\end{tikzpicture}}
+\caption{A simplified, two-dimensional view of the setup for the Proximity Gap Theorem. The large rectangle represents an affine space $S$ within the high-dimensional space $\mathbb{F}_q^n$. The shaded circles are Hamming balls, each containing all the vectors that are $\delta$-close to a specific Reed-Solomon codeword. The theorem analyzes what fraction of the space $S$ is covered by these balls.}
+\label{fig:proximity_gap_setup}
+\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubsection{Honest prover case}
+
+The "All-In" scenario of the proximity gap corresponds to the case of an honest prover. Here, the prover's initial claim is true: the batch of vectors he provides, $\{\mathbf{u}_0, \mathbf{u}_1, \dots, \mathbf{u}_l\}$, are close to valid Reed-Solomon codewords. This means every vector $\mathbf{u}_i$ is close to an element of the code space $V$.
+
+The property that helps us in this situation is the linearity of Reed-Solomon codes. The set of all valid codewords, $V$, is a linear subspace, which means it is closed under linear combinations. When the verifier tests the prover, they are effectively sampling a random vector $\mathbf{u}'$ from the affine space $S$ generated by the prover's vectors:
+\[ S = \left\{ \sum_{i=0}^{l} r_i \mathbf{u}_i \mid r_i \in \mathbb{F}_q \right\} \]
+Since each initial vector $\mathbf{u}_i$ is an element of the linear subspace $V$, any linear combination of them is guaranteed to also be close to a valid codeword in $V$.
+
+
+\begin{tcolorbox}[breakable, title={Consequence for the Proximity Test}]
+Because every possible combined vector $\mathbf{u}' \in S$ is itself a perfect codeword, its distance to the code space $V$ is zero.
+\[ d(\mathbf{u}', V) = 0 \quad \text{for all } \mathbf{u}' \in S \]
+This is true for \textit{any} choice of random coefficients. Therefore, the probability that a random vector from $S$ is $\delta$-close to the code is 1.
+\[ \Pr_{\mathbf{u}' \in S} \left[ d(\mathbf{u}', V) \le \delta n \right] = 1 \]
+This perfectly matches the \textbf{"All-In"} case of the proximity gap definition.
+\end{tcolorbox}
+
+
+
+
+
+
+
+
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_gq1qz7lg5}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_gq1qz7lg5}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\begin{figure}[h!]
+\centering
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\resizebox{0.9\textwidth}{!}{
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Shape: Rectangle [id:dp5711963755485704] 
+\draw  [pattern=_gq1qz7lg5,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (43.5,-58) -- (632.5,-58) -- (632.5,307) -- (43.5,307) -- cycle ;
+
+% Text Node
+\draw (62,-80) node [anchor=north west][inner sep=0.75pt]   [align=left] {Affine space $\displaystyle S \in \mathbb{F}_q^n$ where all points are $\delta$ close to the code.};
+
+
+\end{tikzpicture}}
+\caption{Visual representation of the "All-In" case. For an honest prover, the affine space $S$ generated by their valid codewords is entirely contained within the code space $V$. Consequently, every vector in $S$ has a distance of 0 to the code and is therefore $\delta$-close, as indicated by the fully shaded region.}
+\label{fig:proximity_gap_honest}
+\end{figure}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\subsubsection{Malicious prover}
+
+
+
+
+
+
+
+Now, we consider the more complex case of a malicious prover. Here, the prover's claim is false: at least one of the vectors he provides in the batch $\{\mathbf{u}_0, \mathbf{u}_1, \dots, \mathbf{u}_l\}$ is far from the code space $V$.
+
+The prover's goal is to construct the other vectors in such a way that when the verifier chooses a random linear combination, the resulting vector $\mathbf{u}'$ appears to be close to a valid codeword, allowing the prover to cheat.
+
+This is where the proximity gap provides its strong security guarantee. Because at least one of the initial vectors is far from $V$, the generated affine space $S$ cannot be "All-In." The proximity gap theorem therefore forces it into the only other possible state: the \textbf{"All-Out"} case.
+
+This means that the set of vectors within $S$ that happen to be $\delta$-close to the code is exceptionally small. The probability that a random linear combination falls into this "lucky" region is negligible, at most $\varepsilon$.
+
+\begin{tcolorbox}[breakable, title={The Verifier's Two Hurdles for a Malicious Prover}]
+For a malicious prover to succeed, they must pass two consecutive, low-probability checks:
+
+\begin{enumerate}
+    \item \textbf{Hurdle 1: The Random Combination Check (Commit Phase)} \\
+    The verifier selects random coefficients to form the vector $\mathbf{u}'$. The prover's first hope is to get lucky—that this specific combination lands in the tiny, $\varepsilon$-sized region of vectors that are $\delta$-close to the code. The proximity gap theorem tells us the probability of this is negligible:
+    \[ \Pr[\text{Prover passes Hurdle 1}] \le \varepsilon \]
+
+    \item \textbf{Hurdle 2: The Query Check (Query Phase)} \\
+    In the far more likely event (with probability $1-\varepsilon$), the vector $\mathbf{u}'$ is $\delta$-far from the code. Now the prover faces a second hurdle. The verifier performs a small number of random queries on $\mathbf{u}'$. Since $\mathbf{u}'$ is $\delta$-far, it must disagree with any valid codeword in at least $\delta n$ positions. A few random queries are therefore very likely to hit one of these disagreements, causing the verifier to reject. The probability of passing this check is also very low.
+\end{enumerate}
+The total probability of a malicious prover succeeding is bounded by the chance of passing Hurdle 1 \textbf{or} Hurdle 2. Because both probabilities are extremely small, the overall soundness of the protocol is very high.
+\end{tcolorbox}
+
+
+
+
+
+
+% Pattern Info
+ 
+\tikzset{
+pattern size/.store in=\mcSize, 
+pattern size = 5pt,
+pattern thickness/.store in=\mcThickness, 
+pattern thickness = 0.3pt,
+pattern radius/.store in=\mcRadius, 
+pattern radius = 1pt}
+\makeatletter
+\pgfutil@ifundefined{pgf@pattern@name@_apj52rgrn}{
+\pgfdeclarepatternformonly[\mcThickness,\mcSize]{_apj52rgrn}
+{\pgfqpoint{0pt}{0pt}}
+{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+{\pgfpoint{\mcSize}{\mcSize}}
+{
+\pgfsetcolor{\tikz@pattern@color}
+\pgfsetlinewidth{\mcThickness}
+\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+\pgfpathlineto{\pgfpoint{\mcSize+\mcThickness}{\mcSize+\mcThickness}}
+\pgfusepath{stroke}
+}}
+\makeatother
+\begin{figure}[h!]
+\centering
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\resizebox{0.9\textwidth}{!}{
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Shape: Rectangle [id:dp9022595566709827] 
+\draw   (48.5,-74) -- (637.5,-74) -- (637.5,291) -- (48.5,291) -- cycle ;
+%Shape: Regular Polygon [id:dp6236864861091281] 
+\draw  [pattern=_apj52rgrn,pattern size=6pt,pattern thickness=0.75pt,pattern radius=0pt, pattern color={rgb, 255:red, 65; green, 117; blue, 5}] (441.5,28.25) -- (425.43,50.36) -- (399.44,41.92) -- (399.44,14.58) -- (425.43,6.14) -- cycle ;
+%Shape: Circle [id:dp9320433835895577] 
+\draw  [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ] (100,129.25) .. controls (100,127.46) and (101.46,126) .. (103.25,126) .. controls (105.04,126) and (106.5,127.46) .. (106.5,129.25) .. controls (106.5,131.04) and (105.04,132.5) .. (103.25,132.5) .. controls (101.46,132.5) and (100,131.04) .. (100,129.25) -- cycle ;
+%Shape: Circle [id:dp871499228699435] 
+\draw  [fill={rgb, 255:red, 208; green, 2; blue, 27 }  ,fill opacity=1 ] (403,24.25) .. controls (403,22.46) and (404.46,21) .. (406.25,21) .. controls (408.04,21) and (409.5,22.46) .. (409.5,24.25) .. controls (409.5,26.04) and (408.04,27.5) .. (406.25,27.5) .. controls (404.46,27.5) and (403,26.04) .. (403,24.25) -- cycle ;
+%Straight Lines [id:da5137677848696582] 
+\draw [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ][fill={rgb, 255:red, 0; green, 0; blue, 0 }  ,fill opacity=1 ]   (127.5,169.5) -- (104.35,134.17) ;
+\draw [shift={(103.25,132.5)}, rotate = 56.76] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da8007396971411193] 
+\draw    (471.5,-2.5) -- (425.24,23.52) ;
+\draw [shift={(423.5,24.5)}, rotate = 330.64] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9882851917867593] 
+\draw [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ]   (406.25,79.75) -- (406.25,29.5) ;
+\draw [shift={(406.25,27.5)}, rotate = 90] [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,draw opacity=1 ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (66,-60) node [anchor=north west][inner sep=0.75pt]   [align=left] {Affine space $\displaystyle S \in \mathbb{F}_q^n$ where the verifier chooses a random point $a$};
+% Text Node
+\draw (124,170.4) node [anchor=north west][inner sep=0.75pt]    {$d( a,V)  >\delta $};
+% Text Node
+\draw (108,120) node [anchor=north west][inner sep=0.75pt]    {$a$};
+% Text Node
+\draw (477,-23) node [anchor=north west][inner sep=0.75pt]   [align=left] {Shadowed region is\\very very small};
+% Text Node
+\draw (388,20) node [anchor=north west][inner sep=0.75pt]  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,opacity=1 ]  {$a$};
+% Text Node
+\draw (417.18,100.5) node  [color={rgb, 255:red, 208; green, 2; blue, 27 }  ,opacity=1 ] [align=left] {Malicious prover is very lucky if $\displaystyle d( a,V) \leq \delta $};
+
+
+\end{tikzpicture}}
+\caption{Visual representation of the "All-Out" proximity gap scenario. When at least one initial vector is far from the code, the resulting affine space $S$ is also "far." The set of vectors that are $\delta$-close to the code (the shaded region) is extremely small, with a measure of at most $\varepsilon$. A random sample $\mathbf{u}'$ from $S$ is therefore highly unlikely to fall into this lucky region.}
+\label{fig:proximity_gap_malicious}
+\end{figure}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{The Main Result: Reed-Solomon Codes Have a Proximity Gap}
 The central theorem of the Ben-Sasson et al. paper\cite{ben2023proximity} is that Reed-Solomon codes exhibit exactly this property. This provides the theoretical foundation needed to trust the random linear combination test.
@@ -703,6 +1179,7 @@ When the number of errors is small, the gap is extremely sharp. If an affine spa
 \paragraph{2. The List Decoding (Johnson) Regime ($\frac{1-\rho}{2} \le \delta < 1 - \sqrt{\rho}$)}
 Remarkably, the gap still holds for a much larger number of errors. The guarantee is slightly weaker, with the fraction of close words being at most $\varepsilon \approx O(n^2/q)$. To ensure this is a small number, we need a larger field, with $q$ being roughly quadratic in $n$.
 \end{tcolorbox}
+
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -727,8 +1204,78 @@ In each round $i$, the protocol begins with a function $f^{(i)}$ that is asserte
     \[ f^{(i+1)}(y) = f^{(i)}_{\text{even}}(y) + z_i \cdot f^{(i)}_{\text{odd}}(y) \]
     The domain of $f^{(i+1)}$ is the set of squared elements from the previous domain, thus its size is halved.
 \end{enumerate}
+
 This recursive process continues until the function is small enough for the verifier to check completely by reading all of its values.
 \end{tcolorbox}
+
+\begin{figure}[h!]
+\centering
+\tikzset{every picture/.style={line width=0.75pt}} %set default line width to 0.75pt        
+
+\resizebox{1.\textwidth}{!}{
+
+
+\begin{tikzpicture}[x=0.75pt,y=0.75pt,yscale=-1,xscale=1]
+%uncomment if require: \path (0,300); %set diagram left start at 0, and has height of 300
+
+%Straight Lines [id:da1619769147234531] 
+\draw    (-0.5,161.5) -- (123.5,160.52) ;
+\draw [shift={(125.5,160.5)}, rotate = 179.55] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9371157369062356] 
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (150.5,99.5) -- (150.5,117.5) -- (150.5,140.5) ;
+\draw [shift={(150.5,142.5)}, rotate = 270] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da4839991565540118] 
+\draw    (183.5,161.5) -- (307.5,160.52) ;
+\draw [shift={(309.5,160.5)}, rotate = 179.55] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da8008382092838684] 
+\draw    (370.5,159.5) -- (494.5,158.52) ;
+\draw [shift={(496.5,158.5)}, rotate = 179.55] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da2736736973313204] 
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (338.5,99.5) -- (338.5,117.5) -- (338.5,140.5) ;
+\draw [shift={(338.5,142.5)}, rotate = 270] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da5449439848348779] 
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (535.5,96.5) -- (535.5,114.5) -- (535.5,137.5) ;
+\draw [shift={(535.5,139.5)}, rotate = 270] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9031897777789631] 
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (-25.5,143.5) -- (80.7,91.38) ;
+\draw [shift={(82.5,90.5)}, rotate = 153.86] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da9376874198746388] 
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (163,143.5) -- (269.2,91.38) ;
+\draw [shift={(271,90.5)}, rotate = 153.86] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+%Straight Lines [id:da19607102189068992] 
+\draw  [dash pattern={on 4.5pt off 4.5pt}]  (358,144.5) -- (464.2,92.38) ;
+\draw [shift={(466,91.5)}, rotate = 153.86] [color={rgb, 255:red, 0; green, 0; blue, 0 }  ][line width=0.75]    (10.93,-3.29) .. controls (6.95,-1.4) and (3.31,-0.3) .. (0,0) .. controls (3.31,0.3) and (6.95,1.4) .. (10.93,3.29)   ;
+
+% Text Node
+\draw (-51,149.4) node [anchor=north west][inner sep=0.75pt]    {$f^{( 0)}( x)$};
+% Text Node
+\draw (132,151.4) node [anchor=north west][inner sep=0.75pt]    {$f^{( 1)}( x)$};
+% Text Node
+\draw (88,75.4) node [anchor=north west][inner sep=0.75pt]    {$f_{\text{even}}^{( 0)}( x) +z_{0} \cdot f_{\text{odd}}^{( 0)}( x)$};
+% Text Node
+\draw (276,74.4) node [anchor=north west][inner sep=0.75pt]    {$f_{\text{even}}^{( 1)}( x) +z_{1} \cdot f_{\text{odd}}^{( 1)}( x)$};
+% Text Node
+\draw (316,149.4) node [anchor=north west][inner sep=0.75pt]    {$f^{( 2)}( x)$};
+% Text Node
+\draw (472,71.4) node [anchor=north west][inner sep=0.75pt]    {$f_{\text{even}}^{( 2)}( x) +z_{2} \cdot f_{\text{odd}}^{( 2)}( x)$};
+% Text Node
+\draw (510,145.4) node [anchor=north west][inner sep=0.75pt]    {$f^{( 3)}( x)$};
+% Text Node
+\draw (-50,184) node [anchor=north west][inner sep=0.75pt]   [align=left] {degree $\displaystyle < k$};
+% Text Node
+\draw (115,184) node [anchor=north west][inner sep=0.75pt]   [align=left] {degree $\displaystyle < k/2$};
+% Text Node
+\draw (295,184) node [anchor=north west][inner sep=0.75pt]   [align=left] {degree $\displaystyle < k/4$};
+% Text Node
+\draw (490,184) node [anchor=north west][inner sep=0.75pt]   [align=left] {degree $\displaystyle < k/8$};
+
+
+\end{tikzpicture}}
+\caption{The recursive structure of the FRI protocol's commit phase. In each round $i$, the function $f^{(i)}$ is split into even and odd components, which are then combined with a random challenge $z_i$ to produce the next function $f^{(i+1)}$, halving the effective degree at each step.}
+\label{fig:fri_folding}
+\end{figure}
+
+
 
 \subsubsection{The Soundness Argument}
 The security analysis of the FRI protocol involves two properties:
