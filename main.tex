@@ -1754,6 +1754,229 @@ The proof has shown that if an affine line is not "All-Out," the underlying alge
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Proof of the Proximity Gap (List Decoding Regime Up to the Johnson Bound)}
+
+TODO
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Advanced Proximity Testing: The WHIR Protocol}
+
+While the FRI protocol and the proximity gap theorem represent a cornerstone of modern proof systems, the intense demands of real-world applications, particularly within the Ethereum ecosystem, are pushing the boundaries of what's possible. The relentless drive for scalability, post-quantum security, and efficiency has ignited a search for protocols that are not just faster, but fundamentally better suited to new computational paradigms, leading to a major architectural shift from univariate to multilinear polynomials. In this demanding landscape, the ultimate goal is to optimize the trifecta of performance: minimizing prover computation, shrinking proof sizes, and slashing the verifier's workload, as this directly translates into lower on-chain gas fees and higher network throughput.
+
+One of the most promising recent developments in this area is WHIR, a recursive, hash-based proximity testing protocol. WHIR is designed for super-fast verification, often running in hundreds of microseconds, a significant improvement over the millisecond-scale verification times of many earlier systems. It achieves this by cleverly integrating constraint-checking directly into the proximity test itself.
+
+WHIR can be seen as a sophisticated evolution of protocols like FRI and Basefold. It introduces a nice trade-off: the prover performs slightly more complex operations, and in return, the verifier can achieve the same level of security with significantly fewer queries. The reduction of both the proof size and the verifier work are the key to its attractiveness.
+
+\subsection{The Core Idea: Integrating Constraints and Folding}
+
+At its heart, WHIR is a proximity test for a special type of code called a \textbf{constrained Reed-Solomon code}. Instead of just proving that a function $f$ is close to \textit{some} low-degree polynomial, WHIR proves that $f$ is close to a low-degree polynomial that also satisfies a specific algebraic constraint, such as an evaluation at a point or a more general sumcheck claim.
+
+To achieve its speed, WHIR combines three ideas:
+\begin{enumerate}
+    \item \textbf{Recursive Folding (inspired by STIR):} Like FRI, WHIR recursively reduces the size of the problem. However, each WHIR round can eliminate multiple variables at once (say, $k$ variables), while only halving the domain size. This rapidly improves the code's rate, which is a key factor in reducing the number of queries needed for soundness.
+    \item \textbf{Integrated Sumcheck (inspired by Basefold):} The algebraic constraint is not checked separately at the end. Instead, it is folded down together with the function in each round, using a lightweight sumcheck protocol. This keeps the verifier's work minimal at each step.
+    \item \textbf{Out-of-Domain Sampling (inspired by DEEP-FRI):} To ensure soundness in the list-decoding regime, WHIR uses out-of-domain sampling. This technique forces a malicious prover to commit to a \textit{single} polynomial candidate, collapsing any ambiguity that might arise from a list of potential codewords.
+\end{enumerate}
+
+These components work together to create a protocol where each recursive step is both sound and extremely cheap for the verifier.
+
+\subsection{A Round of WHIR in Detail: From a Large Problem to a Small One}
+
+Let's break down the mechanics of a single WHIR reduction step, which recursively transforms a large, complex proximity problem into a smaller, more manageable one. Suppose the prover starts with a function $f$ on a domain $L$ and claims it is a codeword satisfying an initial algebraic property (e.g., a sumcheck claim). A WHIR round reduces this to a similar, but much smaller, problem about a new function $g$.
+
+The entire process, illustrated in Figure \ref{fig:whir_iteration}, can be understood as a sequence of four main phases.
+
+\begin{figure}[h!]
+    \centering
+    \includegraphics[width=1.\textwidth]{img/whir_iteration.jpg}
+    \caption{A WHIR iteration}
+    \label{fig:whir_iteration}
+\end{figure}
+
+\subsubsection{Phase 1: Interaction and Folding}
+The round begins with an interaction where the verifier provides the prover with randomness.
+\begin{itemize}
+    \item \textbf{Prover-Verifier Exchange:} The verifier (V) sends a vector of $k$ random challenges, $\alpha_1, \dots, \alpha_k$, to the prover (P).
+    \item \textbf{Prover's Task:} The prover uses these challenges for two parallel tasks:
+    \begin{enumerate}
+        \item To run $k$ rounds of a sumcheck protocol on the initial algebraic constraint, producing intermediate sumcheck polynomials $\hat{h}_i$.
+        \item To compute a new, smaller function $g$ by \textbf{folding} the original function $f$ using the same challenges: $g = \text{Fold}(f, \alpha_1, \dots, \alpha_k)$.
+    \end{enumerate}
+\end{itemize}
+At the end of this phase, the prover commits to the resulting function $g$. This function lives on a new, smaller domain (a "domain shift") and is claimed to be the correct, folded representation of $f$.
+
+\subsubsection{Phase 2: Consistency Checks}
+The verifier now needs to check if the prover was honest. Was $g$ really generated correctly from $f$? To do this, the verifier makes a small number of queries to the original function $f$ to generate a "list of claims" that $g$ must satisfy. This is a DEEP-style verification.
+\begin{itemize}
+    \item \textbf{Out-of-Domain Query to Pinpoint a Polynomial:} The verifier picks a random point $z_0$ from \textbf{outside} $g$'s primary commitment domain and asks the prover for the evaluation $v_0 = g(z_0)$. This crucial query forces the prover to commit to a \textit{single} unique polynomial from any potential list of candidates, effectively collapsing list-decoding ambiguity.
+    \item \textbf{Consistency Queries:} The verifier also picks several random points $z_1, \dots, z_s$ where the value of $g$ can be predicted from $f$. The verifier queries $f$ to compute these expected values, creating a set of consistency checks that an honest $g$ must pass.
+\end{itemize}
+
+\subsubsection{Phase 3: Batching the Claims}
+At this point, the verifier has generated multiple algebraic claims that the polynomial underlying $g$ must satisfy: (1) the specialized sumcheck claim, (2) the out-of-domain evaluation claim, and (3) several folding consistency claims. Checking them individually would be inefficient.
+
+Instead, as shown in the "Batching" step of the diagram, the verifier uses an additional random challenge to combine all these separate claims $(\hat{w}_1, \sigma_1), \dots, (\hat{w}_\ell, \sigma_\ell)$ into a single, compact constraint $(\hat{w}^*, \sigma^*)$. This is a technique that preserves soundness while dramatically reducing the verifier's work.
+
+\subsubsection{Phase 4: The Recursive Claim}
+The round concludes by establishing a new, smaller proximity problem. The verifier's task is now reduced to checking if the function $g$ is close to a codeword in a new Constrained Reed-Solomon (CRS) code, defined by the single batched constraint $(\hat{w}^*, \sigma^*)$:
+\[
+g \in \text{CRS}\left[\frac{n}{2}, m-k, \rho', \hat{w}^*, \sigma^*\right]
+\]
+As the diagram highlights, this new problem is not just smaller, but also has an improved rate. The new rate $\rho'$ is given by $\rho' = 2^{1-k} \rho$. This is because we reduced the polynomial's complexity by a factor of $2^k$ (by eliminating $k$ variables) while only halving the domain size. This rate improvement at each step is the engine behind WHIR's low query complexity and fast verification. The protocol now recurses on this new, more efficient claim.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Soundness of a WHIR Round}
+
+The security of WHIR comes from the combined strength of its three phases. If a malicious prover starts with a function $f_0$ that is far from any valid codeword, he will be caught with very high probability. The analysis follows a \textbf{round-by-round soundness} approach, where we show that if a prover can pass one phase of the protocol, it must be because their claims in the previous phase were already valid. A failure at any stage results in rejection.
+
+Let's assume the initial claim is that the prover's function $f_0$ on domain $D_0$ is $\theta_0$-close to a polynomial $p_0$ that satisfies an inner product claim $\langle P_0, R_0 \rangle_{H_n} = c_0$. A malicious prover starts with an $f_0$ that violates this.
+
+\subsubsection{Soundness of the Sumcheck and Commit Phase}
+This phase consists of $k$ rounds of the sumcheck protocol. The soundness relies on a generalization of the proximity gap theorem, often called a \textbf{correlated agreement theorem with constraints}.
+
+The core argument is that algebraic consistency is preserved backwards in time. If a prover can consistently provide sumcheck polynomials $q_i(X)$ that satisfy the verifier's checks, it implies their data from the previous step was already consistent.
+
+Let's formalize this. In each step $i$ (from $1$ to $k$), the protocol reduces a claim about a (virtual) folded function $f_{i-1}$ to a claim about $f_i = \text{fold}_{\lambda_i}(f_{i-1})$.
+\begin{itemize}
+    \item \textbf{Initial claim ($R_{i-1}$):} $f_{i-1}$ is $\theta_0$-close to a polynomial $p_{i-1}$ whose multilinear version $P_{i-1}$ satisfies the $(i-1)$-th sumcheck claim.
+    \item \textbf{New claim ($R_i$):} After receiving the prover's polynomial $q_{i-1}(X)$ and providing a challenge $\lambda_i$, the new folded function $f_i$ is $\theta_0$-close to a polynomial $p_i$ satisfying the new, specialized sumcheck claim.
+\end{itemize}
+The correlated agreement theorem with constraints guarantees that if the new claim $R_i$ holds with non-negligible probability over the choice of $\lambda_i$, then the initial claim $R_{i-1}$ must have been true. A malicious prover starting with a false claim for $f_0$ cannot create a folded function $f_k$ that satisfies its constraints, except with a tiny probability $\varepsilon_i$ at each step.
+
+The total soundness error for this phase is the maximum of these round errors.
+\[
+\varepsilon_{\text{sumcheck}} = \max_{1 \le i \le k} \varepsilon_i
+\]
+Crucially, this holds even though the intermediate functions $f_1, \dots, f_{k-1}$ are not explicitly committed.
+
+
+
+\subsubsection{Soundness of the Query Phase}
+This is where WHIR's unique security properties come into play. After the commit phase, a malicious prover may have provided a commitment $f_1$ over the domain $D_1$ that is not close to a single unique polynomial, but rather to a small \textit{list} of them. The query phase is designed to make this ambiguity impossible by forcing the prover onto a single, verifiable path.
+
+\paragraph{The Out-of-Domain Query ($z_0$): Collapsing the List}
+The primary goal of the out-of-domain query is to defeat list decoding attacks. Let's assume the prover's commitment $f_1$ is $\theta_1$-close to a list of candidate polynomials, $\Lambda(f_1, \theta_1)$. Let the size of this list be bounded by $\ell_1(\theta_1)$, as given by the Guruswami-Sudan bound.
+
+\begin{tcolorbox}[breakable, title={Why Out-of-Domain? The Power of a New Data Point}]
+A natural question is: why must the query $z_0$ be \textit{outside} the domain $D_1$?
+
+\begin{itemize}
+    \item \textbf{In-Domain queries are insufficient:} If the verifier chose a point $x_q \in D_1$, the prover's answer would simply be the already-committed value $f_1(x_q)$. By definition, every polynomial $p(X)$ on the candidate list $\Lambda(f_1, \theta_1)$ is already close to $f_1$, so they likely agree with $f_1$ at $x_q$. An in-domain query provides no new information to distinguish between the candidates on the list; it only re-confirms the data that created the ambiguity in the first place.
+
+    \item \textbf{Out-of-Domain queries force a choice:} An OOD query at $z_0 \notin D_1$ forces the prover to provide a \textit{new} piece of information: the value $v_0$. This value acts as a filter. Since distinct low-degree polynomials will almost certainly have different values at a random point, the answer $v_0$ effectively forces the prover to commit to the single polynomial on the list for which $p(z_0)=v_0$. Any other candidate is immediately invalidated. This is what makes the OOD query a powerful tool for collapsing the list of possibilities.
+\end{itemize}
+\end{tcolorbox}
+
+The verifier's strategy is to pick a random point $z_0$ from the very large set $\mathbb{F} \setminus D_1$ and ask for the evaluation $v_0 = f_1(z_0)$. A cheating prover gets caught if this single query is sufficient to distinguish between the different polynomial candidates on the list. The only way for the prover to succeed is if he gets lucky and at least two distinct polynomials on the list, say $p_a(X)$ and $p_b(X)$, happen to have the same value at $z_0$.
+
+We can bound the probability of this lucky event using the Schwartz-Zippel Lemma. The difference $p_a(X) - p_b(X)$ is a non-zero polynomial of degree less than $2^{n-k}$. The probability that it evaluates to zero at a random point $z_0$ is:
+\[
+\Pr_{z_0 \in \mathbb{F} \setminus D_1} [p_a(z_0) = p_b(z_0)] = \Pr_{z_0 \in \mathbb{F} \setminus D_1} [(p_a - p_b)(z_0) = 0] \le \frac{\deg(p_a - p_b)}{|\mathbb{F} \setminus D_1|} < \frac{2^{n-k}}{|\mathbb{F} \setminus D_1|}
+\]
+To find the probability that \textit{any} pair on the list agrees, we use a union bound. The number of distinct pairs of polynomials in a list of size $\ell_1(\theta_1)$ is precisely $\binom{\ell_1(\theta_1)}{2}$. Therefore, the total probability of failure for this step is:
+\[
+\varepsilon_{\text{list-collapse}} \le \binom{\ell_1(\theta_1)}{2} \cdot \frac{2^{n-k}}{|\mathbb{F} \setminus D_1|}
+\]
+
+\begin{tcolorbox}[breakable, title={Connecting to the Paper's Formula}]
+The paper \cite{habock2024basefold} states the error term as $\frac{\ell_1(\theta_1)^2}{2} \cdot \frac{2^{n-k}}{|\mathbb{F} \setminus D_1|}$. The relationship is as follows:
+\[
+\binom{\ell_1(\theta_1)}{2} = \frac{\ell_1(\theta_1) \cdot (\ell_1(\theta_1) - 1)}{2} = \frac{\ell_1(\theta_1)^2 - \ell_1(\theta_1)}{2}
+\]
+For a large list size $\ell_1(\theta_1)$, the $\ell_1^2$ term dominates, so $\frac{\ell_1^2 - \ell_1}{2} \approx \frac{\ell_1^2}{2}$. It is common in cryptographic proofs to use the simpler, slightly looser upper bound of $O(\ell^2)$ for clarity, as the asymptotic behavior is the same. The formula with the binomial coefficient is the more precise bound.
+\end{tcolorbox}
+
+\paragraph{The Folding Consistency Queries ($z_1, \dots, z_{s_0}$): Verifying the Fold}
+Now that the out-of-domain query has forced the prover to implicitly commit to a \textit{single} polynomial candidate, $p_1(X)$, the verifier must check if this candidate is the authentic folding of the original function $f_0$.
+
+The verifier samples $s_0$ points $z_j$ from the folded domain $\pi^k(D_0)$. For each point, the verifier computes the correct value $v_j = \text{fold}_{\lambda_1, \dots, \lambda_k}(f_0)(z_j)$ by querying the oracle for $f_0$. If the prover's chosen polynomial $p_1$ is actually $\theta_0$-far from this true folded function, then a random query $z_j$ will land on a position where they disagree with probability at least $\theta_0$.
+
+The probability that a single query \textit{fails} to detect a mismatch is at most $(1-\theta_0)$. Therefore, the probability that all $s_0$ independent queries fail to detect the fraud is:
+\[
+\varepsilon_{\text{sampling}} = (1-\theta_0)^{s_0}
+\]
+By choosing a moderate number of queries for $s_0$, this failure probability can be made exponentially small.
+
+\paragraph{Total Soundness Error of the Query Phase}
+The total soundness error of the query phase is the probability that the prover passes \textit{either} by getting lucky on the list-collapsing step \textit{or} by evading detection in the sampling step. Combining these, we get the final expression for the soundness error, as stated in the lemma:
+\[
+\varepsilon_{k+1} = \underbrace{\binom{\ell_1(\theta_1)}{2} \cdot \frac{2^{n-k}}{|\mathbb{F} \setminus D_1|}}_{\text{Prob. that } z_0 \text{ fails to isolate a unique candidate}} + \underbrace{(1-\theta_0)^{s_0}}_{\text{Prob. that sampling fails to detect inconsistency}}
+\]
+This two defense makes the query phase extremely robust against a malicious prover, even one who is trying to leverage the ambiguities of list decoding.
+
+
+
+
+
+
+
+\subsubsection{Soundness of the Aggregation Step: Batching Claims for Efficiency}
+The final phase of a WHIR round is aggregation, also known as batching. After the prover has successfully navigated the query phase, the verifier is left with a single candidate polynomial, $p_1(X)$, and a list of properties that this polynomial must satisfy. Checking each property individually would be inefficient.
+
+Instead, the verifier combines all these separate claims into a single, compact claim using a random challenge $\gamma$. The soundness of this step is guaranteed by the fact that it is extremely unlikely for multiple incorrect claims to "cancel each other out" and coincidentally satisfy a random combination.
+
+\paragraph{The Claims to be Batched}
+Let's first clearly restate the set of claims the verifier has accumulated about the prover's candidate polynomial, $P_1$.
+\begin{enumerate}
+    \item \textbf{The Sumcheck Claim:} This is the folded-down algebraic constraint from the sumcheck phase.
+    \[ \langle P_1, R_0(\lambda_1, \dots, \lambda_k, \cdot) \rangle_{H_{n-k}} = q_{k-1}(\lambda_k) \]
+    \item \textbf{The Evaluation Claims:} These are the $s_0+1$ claims from the query phase.
+    \[ \langle P_1, Q_{n-k}(z_j) \rangle_{H_{n-k}} = v_j \quad \text{for } j=0, \dots, s_0 \]
+\end{enumerate}
+
+\paragraph{The Aggregation Mechanism}
+To combine these claims, the verifier uses a random challenge $\gamma \in \mathbb{F}$ to create a random linear combination. A single new kernel, $R_1$, is computed:
+\[
+\underbrace{R_1}_{\text{New Batched Kernel}} = \underbrace{R_0(\lambda_1, \dots, \lambda_k, \cdot)}_{\text{Sumcheck Kernel}} + \sum_{j=0}^{s_0} \underbrace{\gamma^{j+1}}_{\text{Random Weight}} \cdot \underbrace{Q_{n-k}(z_j)}_{\text{Evaluation Kernels}}
+\]
+And a corresponding new target value, $c_1$, is also computed:
+\[
+c_1 = q_{k-1}(\lambda_k) + \sum_{j=0}^{s_0} \gamma^{j+1} \cdot v_j
+\]
+The original list of claims is now replaced by a single, equivalent claim for the next round: $\langle P_1, R_1 \rangle_{H_{n-k}} = c_1$.
+
+\paragraph{Why Batching is Secure: The Soundness Argument}
+The security of this step relies on the Schwartz-Zippel Lemma. Suppose a malicious prover is trying to cheat, meaning his candidate polynomial $P_1$ violates at least one of the original claims. Let's define an "error polynomial" $E(\gamma)$ that is zero if and only if the batched claim holds:
+\[
+E(\gamma) = \left( \langle P_1, R_0(\dots) \rangle - q_{k-1}(\lambda_k) \right) + \sum_{j=0}^{s_0} \gamma^{j+1} \cdot \left( \langle P_1, Q_{n-k}(z_j) \rangle - v_j \right)
+\]
+Since the prover is cheating, at least one of the terms in the parentheses is non-zero, which means $E(\gamma)$ is a \textit{non-zero polynomial} in the variable $\gamma$.
+
+The degree of this polynomial is at most $s_0+1$. By the Schwartz-Zippel Lemma, it can have at most $s_0+1$ roots. The probability that a random $\gamma$ happens to be one of these roots is negligibly small. This is the core of the soundness argument.
+
+\begin{tcolorbox}[breakable, title={Why Batching is Secure: The Soundness Argument}]
+The security of this step comes from a core principle of algebra: a non-zero polynomial can only have a few roots. Let's see how this applies.
+
+\paragraph{The Setup}
+A malicious prover has a list of at most $\ell_1(\theta_1)$ candidate polynomials for $f_1$. For his cheat to succeed, at least one of these candidates must satisfy the verifier's single, batched claim for the randomly chosen challenge $\gamma$.
+
+\paragraph{The Logic}
+For any \textit{single} candidate polynomial, the batched claim is an equation that can be viewed as a polynomial in the variable $\gamma$. Because the aggregation combines $s_0+1$ evaluation claims using powers of $\gamma$ up to $\gamma^{s_0+1}$, this polynomial has a degree of $d = s_0+1$.
+
+If the prover is cheating, at least one of the original claims for this candidate was false. This means the polynomial in $\gamma$ is not identically zero. A non-zero polynomial of degree $d$ can have at most $d$ roots. Therefore, for each candidate polynomial, there are at most $d = s_0+1$ "lucky" values of $\gamma$ that would make the verifier accept it.
+
+\paragraph{Bounding the Total Probability}
+With a list of at most $\ell_1(\theta_1)$ candidate polynomials, the total number of "lucky" $\gamma$ values across all candidates is at most $\ell_1(\theta_1) \cdot (s_0+1)$. The probability that the verifier randomly picks one of these few lucky values from the entire field $\mathbb{F}$ is therefore very small. This gives us the soundness error for the aggregation step:
+\[
+\varepsilon_{\text{agg}} \le \frac{\ell_1(\theta_1) \cdot (s_0+1)}{|\mathbb{F}|}
+\]
+The paper's stated bound of $\frac{\ell_1(\theta_1) \cdot s_0}{|\mathbb{F}|}$ reflects the same core idea: the error is proportional to the list size multiplied by the number of claims being batched. I need to check more precisely why such a difference is happening.
+\end{tcolorbox}
+
+\subsubsection{Global Soundness of a WHIR Round}
+By combining these three layers of defense, WHIR ensures that any attempt by a malicious prover to cheat is detected with very high probability. The total soundness error for a single round is the sum of the errors from each phase. A prover starting with an invalid function must first pass the sumcheck phase (with probability $\approx \varepsilon_{\text{sumcheck}}$), then the query phase by collapsing the list and passing sampling (with probability $\approx \varepsilon_{\text{query}}$), and finally the aggregation phase (with probability $\approx \varepsilon_{\text{agg}}$). The multi-stage verification, especially the powerful list-collapsing technique of the out-of-domain query, provides a robust defense that allows WHIR to achieve high security with far fewer queries than previous methods, which is the key to its exceptional verifier performance.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 
 \bibliographystyle{IEEEtran}
